@@ -1,0 +1,9 @@
+name: LutisCore
+version: '${project.version}'
+main: org.lozin.lutiscore.MAIN
+api-version: '1.20'
+load: STARTUP
+authors: [ Lozin ]
+commands:
+  lutis_core:
+    aliases: [ lc ]

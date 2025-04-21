@@ -1,0 +1,4 @@
+bus: 'mdfk'
+commands:
+  lutis:
+    permission: lutis.command
