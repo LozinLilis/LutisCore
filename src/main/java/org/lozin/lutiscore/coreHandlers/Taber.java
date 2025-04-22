@@ -19,7 +19,7 @@ public class Taber implements TabCompleter {
 	public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
 		if (command.getName().equals("lutis_core")){
 			if (strings.length == 1){
-				return DependencyService.getDependencies().stream().map(Plugin::getName).collect(Collectors.toList());
+				return DependencyService.getDependencies(MAIN.instance).stream().map(Plugin::getName).collect(Collectors.toList());
 			}
 			if (strings.length == 2){
 				return Arrays.asList("write", "get", "cache");

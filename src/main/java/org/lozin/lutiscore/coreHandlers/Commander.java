@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lozin.lutiscore.MAIN;
 import org.lozin.tools.cache.Cache;
 import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.string.JavaPluginParser;
@@ -24,7 +25,7 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 			if (args.length == 1){
 				if (args[0].equals("reload")){
 					try {
-						DependencyService.reload(sender);
+						DependencyService.reload(sender, MAIN.instance);
 					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
