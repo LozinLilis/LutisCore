@@ -36,7 +36,7 @@ public class FileService {
 		}
 	}
 	public static void saveAllDefaultFiles(JavaPlugin plugin){
-		List<String> filePaths = getInferiorFiles(plugin).stream().filter(path -> path.equals("example.yml"))
+		List<String> filePaths = getInferiorFiles(plugin).stream().filter(path -> path.startsWith("example."))
 				                         .collect(Collectors.toList());
 		for(String path : filePaths){
 			plugin.saveResource(path, true);
