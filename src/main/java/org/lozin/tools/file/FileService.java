@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileService {
@@ -33,13 +32,6 @@ public class FileService {
 			} catch (IOException e) {
 				plugin.getLogger().warning("无法创建文件：" + e.getMessage());
 			}
-		}
-	}
-	public static void saveAllDefaultFiles(JavaPlugin plugin){
-		List<String> filePaths = getInferiorFiles(plugin).stream().filter(path -> path.startsWith("example"))
-				                         .collect(Collectors.toList());
-		for(String path : filePaths){
-			plugin.saveResource(path, true);
 		}
 	}
 }
