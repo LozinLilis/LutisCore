@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileService {
@@ -20,7 +21,7 @@ public class FileService {
 					.map(p -> p.toString().replace("\\", "/")) // 强制统一为UNIX路径
 					.forEach(filePaths::add);
 		} catch (IOException e) {
-			e.printStackTrace();
+			plugin.getLogger().warning("无法获取插件文件列表：" + e.getMessage());
 		}
 		return filePaths;
 	}
@@ -30,8 +31,15 @@ public class FileService {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				plugin.getLogger().warning("无法创建文件：" + e.getMessage());
 			}
+		}
+	}
+	public static void saveAllDefaultFiles(JavaPlugin plugin){
+		List<String> filePaths = getInferiorFiles(plugin).stream().filter(path -> path.equals("example.yml"))
+				                         .collect(Collectors.toList());
+		for(String path : filePaths){
+			plugin.saveResource(path, true);
 		}
 	}
 }
