@@ -7,6 +7,7 @@ import org.lozin.tools.cache.MapperKey;
 import org.lozin.tools.enumrator.MapperType;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,24 +37,40 @@ public class YamlService {
 	
 	public Object get(String param) {
 		String[] params = param.split("\\.");
-		for (Map.Entry<String, Object> entry : mapper.entrySet()) {
-			if (entry.getKey().equals(params[0])) {
-				if (params.length == 1) {
-					return entry.getValue();
-				} else {
-					Map<String, Object> map = (Map<String, Object>) entry.getValue();
-					for (int i = 1; i < params.length; i++) {
-						if (map.containsKey(params[i])) {
-							map = (Map<String, Object>) map.get(params[i]);
-						} else {
-							return null;
-						}
-					}
-					return map;
+		Object current = mapper;
+		
+		for (int i = 0; i < params.length; i++) {
+			String key = params[i];
+			
+			if (current instanceof Map) {
+				Map<String, Object> map = (Map<String, Object>) current;
+				if (!map.containsKey(key)) return null;
+				current = map.get(key);
+			} else if (current instanceof List) {
+				List<Object> list = (List<Object>) current;
+				try {
+					int index = Integer.parseInt(key);
+					if (index < 0 || index >= list.size()) return null;
+					current = list.get(index);
+				} catch (NumberFormatException e) {
+					return null; // Key 不是数字索引，无法处理 List
 				}
+			} else {
+				return null; // 非 Map/List 类型直接返回
 			}
 		}
-		return null;
+		return current;
+	}
+	// 获取 Map 类型节点
+	public Map<String, Object> getMap(String param) {
+		Object value = get(param);
+		return value instanceof Map ? (Map<String, Object>) value : null;
+	}
+	
+	// 获取 List 类型节点
+	public List<Object> getList(String param) {
+		Object value = get(param);
+		return value instanceof List ? (List<Object>) value : null;
 	}
 	public void write(String param, Object value) {
 		if (param == null || param.isEmpty()) return;
