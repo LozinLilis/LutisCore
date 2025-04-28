@@ -1,10 +1,12 @@
 package org.lozin.lutiscore;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.lutiscore.coreHandlers.Commander;
 import org.lozin.lutiscore.coreHandlers.Taber;
 import org.lozin.tools.cache.Cache;
+import org.lozin.tools.dependencies.DependencyService;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -20,7 +22,9 @@ public final class MAIN extends JavaPlugin {
 		Objects.requireNonNull(Bukkit.getPluginCommand("lutis_core")).setTabCompleter(new Taber());
 		instance = this;
 		try {
-			Cache.init(this);
+			for (Plugin p : DependencyService.getDependencies(this)){
+				Cache.init((JavaPlugin) p);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
