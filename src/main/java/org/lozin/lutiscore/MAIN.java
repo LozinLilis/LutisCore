@@ -18,11 +18,13 @@ public final class MAIN extends JavaPlugin {
 	public void onEnable() {
 		// Plugin startup logic
 		saveResource("ex.yml", false);
+		saveDefaultConfig();
 		Objects.requireNonNull(Bukkit.getPluginCommand("lutis_core")).setExecutor(new Commander());
 		Objects.requireNonNull(Bukkit.getPluginCommand("lutis_core")).setTabCompleter(new Taber());
 		instance = this;
 		try {
 			for (Plugin p : DependencyService.getDependencies(this)){
+				System.out.println(p.getName());
 				Cache.init((JavaPlugin) p);
 			}
 		} catch (IOException e) {

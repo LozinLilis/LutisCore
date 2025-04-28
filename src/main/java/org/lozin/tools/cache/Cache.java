@@ -2,6 +2,7 @@ package org.lozin.tools.cache;
 
 import lombok.Data;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lozin.lutiscore.MAIN;
 import org.lozin.tools.file.FileService;
 import org.lozin.tools.yaml.YamlFactory;
 import org.lozin.tools.yaml.YamlService;
@@ -20,6 +21,7 @@ public class Cache {
 			if(file.endsWith(".yml")){
 				YamlFactory yamlFactory = new YamlFactory(plugin, file);
 				new YamlService(yamlFactory);
+				if (MAIN.instance.getConfig().getBoolean("debug.cache")) System.out.println(mapper);
 			}
 		}
 	}
