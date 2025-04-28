@@ -19,6 +19,7 @@ public class YamlFactory {
 	private File yamlFile;
 	private JavaPlugin plugin;
 	private String pathInFolder;
+	private Yaml yaml;
 	
 	public YamlFactory(JavaPlugin plugin, String pathInFolder) throws IOException {
 		Yaml yaml = new Yaml();
@@ -31,6 +32,7 @@ public class YamlFactory {
 		}
 		try (FileInputStream inputStream = new FileInputStream(yamlFile)) {
 			this.mapper = yaml.load(inputStream);
+			this.yaml = yaml;
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
