@@ -63,13 +63,13 @@ public class YamlService {
 	}
 	// 获取 Map 类型节点
 	public Map<String, Object> getMap(String param) {
-		Object value = get(param);
+		Object value = get(param, null);
 		return value instanceof Map ? (Map<String, Object>) value : null;
 	}
 	
 	// 获取 List 类型节点
 	public List<Object> getList(String param) {
-		Object value = get(param);
+		Object value = get(param, null);
 		return value instanceof List ? (List<Object>) value : null;
 	}
 	public void write(String param, Object value) {
@@ -104,5 +104,9 @@ public class YamlService {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+	public Object get(String param, Object defaultValue) {
+		Object value = get(param);
+		return value != null ? value : defaultValue;
 	}
 }
