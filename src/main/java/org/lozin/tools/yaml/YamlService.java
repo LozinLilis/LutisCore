@@ -24,6 +24,7 @@ public class YamlService {
 			this.mapper = new ConcurrentHashMap<>();
 		}
 		Cache.mapper.put(new MapperKey(yamlFactory.getPlugin(), MapperType.YamlCache, yamlFactory.getPathInFolder()), mapper);
+		Cache.services.add(this);
 	}
 	public void getAll() {
 		if (mapper == null) {
