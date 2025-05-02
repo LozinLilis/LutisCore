@@ -40,12 +40,10 @@ public class YamlService {
 		String[] params = param.split("\\.");
 		Object current = mapper;
 		
-		for (int i = 0; i < params.length; i++) {
-			String key = params[i];
-			
+		for (String key : params) {
 			if (current instanceof Map) {
 				Map<String, Object> map = (Map<String, Object>) current;
-				if (!map.containsKey(key)) return null;
+				if (! map.containsKey(key)) return null;
 				current = map.get(key);
 			} else if (current instanceof List) {
 				List<Object> list = (List<Object>) current;
@@ -110,4 +108,5 @@ public class YamlService {
 		Object value = get(param);
 		return value != null ? value : defaultValue;
 	}
+	
 }

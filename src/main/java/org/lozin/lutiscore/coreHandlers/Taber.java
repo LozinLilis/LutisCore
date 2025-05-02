@@ -21,22 +21,24 @@ public class Taber implements TabCompleter {
 			if (strings.length == 1){
 				return DependencyService.getDependencies(MAIN.instance).stream().map(Plugin::getName).collect(Collectors.toList());
 			}
-			if (strings.length == 2){
-				return Arrays.asList("write", "get", "cache");
+			else if (strings.length == 2){
+				return Arrays.asList("write", "get", "cache", "edit");
 			}
-			if (strings.length == 3 && !strings[1].equals("cache")){
+			else if (strings.length == 3 && !strings[1].equals("cache")){
 				return FileService.getInferiorFiles(MAIN.instance);
 			}
-			if (strings.length == 3 && strings[1].equals("cache")){
-				return Arrays.asList("yaml");
-			}
-			if (strings.length >= 4 && strings[1].equals("cache")){
-				switch (strings[2]){
-					case "yaml":
-						return FileService.getInferiorFiles(JavaPluginParser.getPlugin(strings[0])).stream().filter(s1 -> s1.endsWith(".yml")).collect(Collectors.toList());
+			else if (strings[1].equals("cache")){
+				if (strings.length == 3){
+					return Arrays.asList("yaml");
+				}
+				else if (strings.length >= 4){
+					switch (strings[2]){
+						case "yaml":
+							return FileService.getInferiorFiles(JavaPluginParser.getPlugin(strings[0])).stream().filter(s1 -> s1.endsWith(".yml")).collect(Collectors.toList());
+					}
 				}
 			}
-			if (strings.length >= 4){
+			else{
 				return Collections.emptyList();
 			}
 		}

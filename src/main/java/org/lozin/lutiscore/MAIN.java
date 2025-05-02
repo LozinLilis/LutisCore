@@ -5,8 +5,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.lutiscore.coreHandlers.Commander;
 import org.lozin.lutiscore.coreHandlers.Taber;
+import org.lozin.lutiscore.coreHandlers.UiHandler;
 import org.lozin.tools.cache.Cache;
 import org.lozin.tools.dependencies.DependencyService;
+import org.lozin.tools.gui.UiCache;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -21,6 +23,7 @@ public final class MAIN extends JavaPlugin {
 		saveDefaultConfig();
 		Objects.requireNonNull(Bukkit.getPluginCommand("lutis_core")).setExecutor(new Commander());
 		Objects.requireNonNull(Bukkit.getPluginCommand("lutis_core")).setTabCompleter(new Taber());
+		Bukkit.getPluginManager().registerEvents(new UiHandler(), this);
 		instance = this;
 		try {
 			for (Plugin p : DependencyService.getDependencies(this)){
@@ -34,6 +37,7 @@ public final class MAIN extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		// Plugin shutdown logic
+		Cache.mapper.clear();
+		UiCache.trash();
 	}
 }
