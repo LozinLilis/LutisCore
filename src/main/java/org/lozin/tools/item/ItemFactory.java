@@ -71,41 +71,69 @@ public class ItemFactory {
 		return itemStack;
 	}
 	
-	public Object getCompound(String path){
-		if (itemStack == null) {try{build();}catch (Exception e){return null;}}
-		List<String> list = Arrays.asList(path.split("\\."));
-		NBTItem nbtItem = new NBTItem(itemStack);
-		NBTCompound current = nbtItem.getCompound(list.get(0));
-		if (current == null) return null;
-		if (list.size() == 1) return current;
-		for (int i = 1; i < list.size(); i++) {
-			if (current == null) return null;
-			String key = list.get(i);
-			if (i == list.size() - 1) {
-				return current.getObject(key, Object.class);
+	public boolean hasCompound(String path){
+		if (itemStack == null || itemStack.getType() == Material.AIR) return false;
+		List<String> paths = Arrays.stream(path.split("\\."))
+				                     .filter(p -> !p.trim().isEmpty())
+				                     .collect(Collectors.toList());
+		NBTItem nbt = new NBTItem(itemStack);
+		NBTCompound current = nbt.getCompound(paths.get(0));
+		if (current == null) {
+			return paths.size() == 1 && nbt.hasTag(paths.get(0));
+		}
+		for (int i = 1; i < paths.size(); i++) {
+			String key = paths.get(i);
+			if (current == null || !current.hasTag(key)) {
+				return false;
 			}
 			current = current.getCompound(key);
 		}
-		return current;
+		return current != null;
 	}
-	
-	public ItemFactory setCompound(String path, Object value){
-		if (itemStack == null) {try{build();}catch (Exception e){return this;}}
+	public void setCompound(String path, String value){
+		if (itemStack == null) return;
 		List<String> list = Arrays.asList(path.split("\\."));
 		NBTItem nbtItem = new NBTItem(itemStack);
 		NBTCompound current = nbtItem.getOrCreateCompound(list.get(0));
 		if (list.size() == 1) {
-			current.setObject(list.get(0), value);
+			current.setString(list.get(0), value);
 		}
 		for (int i = 1; i < list.size(); i++) {
 			String key = list.get(i);
 			if (i == list.size() - 1) {
-				current.setObject(key, value);
+				current.setString(key, value);
 			}
 			current = current.getOrCreateCompound(key);
 		}
 		itemStack = nbtItem.getItem();
-		return this;
+	}
+	public Object getCompound(String path) {
+		if (itemStack == null || itemStack.getType() == Material.AIR) {
+			return null;
+		}
+		List<String> paths = Arrays.stream(path.split("\\."))
+				                     .filter(p -> !p.trim().isEmpty())
+				                     .collect(Collectors.toList());
+		NBTItem nbt = new NBTItem(itemStack);
+		NBTCompound current = nbt.getCompound(paths.get(0));
+		if (current == null) {
+			if (paths.size() == 1 && nbt.hasTag(paths.get(0))) {
+				return nbt.getString(paths.get(0));
+			}else{
+				return null;
+			}
+		}
+		for (int i = 1; i < paths.size(); i++) {
+			String key = paths.get(i);
+			if (current == null || !current.hasTag(key)) {
+				return null;
+			}
+			current = current.getCompound(key);
+		}
+		if (current != null) {
+			return current.getString(paths.get(paths.size() - 1));
+		}
+		return null;
 	}
 	public Object getAllNBT(){
 		if (itemStack == null) return null;
