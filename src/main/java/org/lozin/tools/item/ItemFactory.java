@@ -90,8 +90,8 @@ public class ItemFactory {
 		}
 		return current != null;
 	}
-	public void setCompound(String path, String value){
-		if (itemStack == null) return;
+	public ItemFactory setCompound(String path, String value){
+		if (itemStack == null) return null;
 		List<String> list = Arrays.asList(path.split("\\."));
 		NBTItem nbtItem = new NBTItem(itemStack);
 		NBTCompound current = nbtItem.getOrCreateCompound(list.get(0));
@@ -106,6 +106,7 @@ public class ItemFactory {
 			current = current.getOrCreateCompound(key);
 		}
 		itemStack = nbtItem.getItem();
+		return this;
 	}
 	public Object getCompound(String path) {
 		if (itemStack == null || itemStack.getType() == Material.AIR) {
