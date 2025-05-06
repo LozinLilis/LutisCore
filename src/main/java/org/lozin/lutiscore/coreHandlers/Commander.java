@@ -1,9 +1,12 @@
 package org.lozin.lutiscore.coreHandlers;
 
+import com.google.common.collect.ImmutableMap;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.lutiscore.MAIN;
 import org.lozin.tools.cache.Cache;
@@ -11,6 +14,8 @@ import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.enumrator.UiType;
 import org.lozin.tools.gui.UiBuilder;
 import org.lozin.tools.gui.UiCache;
+import org.lozin.tools.gui.UiObject;
+import org.lozin.tools.string.ArraysHandler;
 import org.lozin.tools.string.JavaPluginParser;
 import org.lozin.tools.string.MessageSender;
 import org.lozin.tools.yaml.YamlFactory;
@@ -35,6 +40,34 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 					}
 				}
 			}
+			if (args.length >= 2 && args[1].equals("edit")){
+				Player player = (Player) sender;
+				UiBuilder builder = UiCache.getBuilder(player);
+				JavaPlugin plugin = JavaPluginParser.getPlugin(args[0]);
+				if (args.length == 2){
+					if (builder == null) builder = new UiBuilder(
+							player,
+							Bukkit.createInventory(null, 54, "§0界面"),
+							UiType.READ_ONLY,
+							plugin
+					);
+					try {
+						builder.build(ImmutableMap.of(
+								ArraysHandler.getList("0-8", "45-53"), new UiObject().getDECORATION()
+						));
+						Inventory inv = builder.getInventory();
+						List<ItemStack> items = UiObject.pathToItems(plugin, "");
+						if (items != null) {
+							for (ItemStack item : items){
+								inv.setItem(inv.firstEmpty(), item);
+							}
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return true;
+				}
+			}
 			if (args.length >= 3){
 				if (args[1].equals("cache")){
 					if (args.length == 3) MessageSender.sendCachedMessage(sender, Cache.mapper, JavaPluginParser.getPlugin(args[0]), args[2], Collections.emptyList());
@@ -42,17 +75,6 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 						List<String> paths = new ArrayList<>(Arrays.asList(args).subList(3, args.length));
 						MessageSender.sendCachedMessage(sender, Cache.mapper, JavaPluginParser.getPlugin(args[0]), args[2], paths);
 					}
-				}
-				if (args.length == 3 && args[1].equals("edit")){
-					Player player = (Player) sender;
-					UiBuilder builder = UiCache.getBuilder(player);
-					if (builder == null) builder = new UiBuilder(
-							player,
-							Bukkit.createInventory(null, 9, "§7编辑界面"),
-							UiType.DEFAULT,
-							JavaPluginParser.getPlugin(args[0])
-					);
-					builder.build();
 				}
 				if (args.length == 4 && args[1].equals("get")){
 					String pluginName = args[0];

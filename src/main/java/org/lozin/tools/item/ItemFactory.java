@@ -7,6 +7,7 @@ import lombok.Data;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.lozin.tools.gui.UiObject;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,7 +35,7 @@ public class ItemFactory {
 	}
 	public ItemFactory(){}
 	public ItemFactory parserFactory(ItemStack itemStack){
-		if (itemStack == null || itemStack.getType() == Material.AIR) return null;
+		if (itemStack == null || itemStack.getType() == Material.AIR) return this;
 		this.itemStack = itemStack;
 		if (itemStack.getItemMeta() != null) {
 			ItemMeta meta = itemStack.getItemMeta();
@@ -90,25 +91,22 @@ public class ItemFactory {
 		}
 		return current != null;
 	}
-	public ItemFactory setCompound(String path, String value){
-		if (itemStack == null) return null;
-		List<String> list = Arrays.asList(path.split("\\."));
-		NBTItem nbtItem = new NBTItem(itemStack);
-		NBTCompound current = nbtItem.getOrCreateCompound(list.get(0));
-		if (list.size() == 1) {
-			current.setString(list.get(0), value);
-		}
-		for (int i = 1; i < list.size(); i++) {
-			String key = list.get(i);
-			if (i == list.size() - 1) {
-				current.setString(key, value);
-			}
+	public ItemFactory setCompound(String path, Object value) {
+		if (itemStack == null || itemStack.getType() == Material.AIR) build();
+		List<String> paths = Arrays.stream(path.split("\\."))
+				                     .filter(p -> !p.trim().isEmpty())
+				                     .collect(Collectors.toList());
+		NBTItem nbt = new NBTItem(itemStack);
+		NBTCompound current = nbt.getOrCreateCompound((paths.get(0)));
+		for (int i = 1; i < paths.size() -1; i++){
+			String key = paths.get(i);
 			current = current.getOrCreateCompound(key);
 		}
-		itemStack = nbtItem.getItem();
+		current.setString(paths.get(paths.size() - 1), value.toString());
+		itemStack =  nbt.getItem();
 		return this;
 	}
-	public Object getCompound(String path) {
+	public String getCompound(String path) {
 		if (itemStack == null || itemStack.getType() == Material.AIR) {
 			return null;
 		}
@@ -124,7 +122,7 @@ public class ItemFactory {
 				return null;
 			}
 		}
-		for (int i = 1; i < paths.size(); i++) {
+		for (int i = 1; i < paths.size() -1; i++) {
 			String key = paths.get(i);
 			if (current == null || !current.hasTag(key)) {
 				return null;
@@ -140,5 +138,16 @@ public class ItemFactory {
 		if (itemStack == null) return null;
 		NBTItem nbtItem = new NBTItem(itemStack);
 		return ((NBTCompound) nbtItem).getCompound();
+	}
+	public String getAction(){
+		if (notValid()) return null;
+		return getCompound(UiObject.ACTION_KEY);
+	}
+	public String getFileType(){
+		if (notValid()) return null;
+		return getCompound(UiObject.FILE_TYPE_KEY);
+	}
+	public boolean notValid(){
+		return itemStack == null || itemStack.getType() == Material.AIR;
 	}
 }

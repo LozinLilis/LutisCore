@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.lozin.tools.enumrator.UiType;
 import org.lozin.tools.gui.UiBuilder;
 import org.lozin.tools.item.ItemFactory;
+import org.lozin.tools.string.MessageSender;
 
 import java.util.Set;
 
@@ -51,12 +52,12 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 		if (clickedItem == null || clickedItem.equals(new ItemStack(Material.AIR))) return;
 		ItemFactory itemFactory = new ItemFactory();
 		itemFactory.parserFactory(clickedItem);
-		Object nbts = itemFactory.getAllNBT();
-		if (nbts == null) {
-			player.sendMessage("§c该物品的NBT不存在");
-			return;
-		};
-		player.sendMessage(nbts.toString());
+		String action = itemFactory.getAction();
+		String fileType = itemFactory.getFileType();
+		MessageSender.sendColorizedMessage(player,
+				"&f此物品的动作: &e"+ action,
+				"&f此物品的文件类型: &e"+ fileType
+		);
 	}
 	
 	@Override
@@ -81,8 +82,10 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 		switch (uiType) {
 			case DEFAULT:
 				if (cancelSlots.contains(clickedSlot)) setCancelled(true);
+				getItemNBT();
 				break;
 			case READ_ONLY:
+				getItemNBT();
 				setCancelled(true);
 				break;
 			case EDITABLE:

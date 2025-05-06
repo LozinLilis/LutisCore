@@ -7,6 +7,7 @@ import org.lozin.lutiscore.coreHandlers.Commander;
 import org.lozin.lutiscore.coreHandlers.Taber;
 import org.lozin.lutiscore.coreHandlers.UiHandler;
 import org.lozin.tools.cache.Cache;
+import org.lozin.tools.cache.FilePathCache;
 import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.gui.UiCache;
 
@@ -27,9 +28,11 @@ public final class MAIN extends JavaPlugin {
 		instance = this;
 		try {
 			for (Plugin p : DependencyService.getDependencies(this)){
-				System.out.println(p.getName());
+				System.out.println(" √ " + p.getName() + " 已加载");
 				Cache.init((JavaPlugin) p);
+				FilePathCache.init((JavaPlugin) p);
 			}
+			Bukkit.getLogger().info(FilePathCache.cache.toString());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -38,6 +41,7 @@ public final class MAIN extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		Cache.mapper.clear();
+		FilePathCache.cache.clear();
 		UiCache.trash();
 	}
 }

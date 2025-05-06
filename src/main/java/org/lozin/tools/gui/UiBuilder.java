@@ -8,6 +8,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.tools.enumrator.UiType;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,10 +20,10 @@ public class UiBuilder {
 	private UiType uiType = UiType.DEFAULT;
 	private JavaPlugin plugin;
 	private Set<Integer> registeredSlots;
-	public void build() {
+	public void build() throws IOException {
 		build(null);
 	}
-	public void build(Map<Integer, ItemStack> mapper){
+	public void build(Map<List<Integer>, ItemStack> mapper) throws IOException {
 		if (inventory == null) return;
 		UiObject uiObject = new UiObject();
 		if (mapper == null) mapper = ImmutableMap.of();
