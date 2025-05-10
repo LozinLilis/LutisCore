@@ -1,12 +1,9 @@
 package org.lozin.lutiscore.coreHandlers;
 
-import com.google.common.collect.ImmutableMap;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.lutiscore.MAIN;
 import org.lozin.tools.cache.Cache;
@@ -14,8 +11,6 @@ import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.enumrator.UiType;
 import org.lozin.tools.gui.UiBuilder;
 import org.lozin.tools.gui.UiCache;
-import org.lozin.tools.gui.UiObject;
-import org.lozin.tools.string.ArraysHandler;
 import org.lozin.tools.string.JavaPluginParser;
 import org.lozin.tools.string.MessageSender;
 import org.lozin.tools.yaml.YamlFactory;
@@ -52,16 +47,8 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 							plugin
 					);
 					try {
-						builder.build(ImmutableMap.of(
-								ArraysHandler.getList("0-8", "45-53"), new UiObject().getDECORATION()
-						));
-						Inventory inv = builder.getInventory();
-						List<ItemStack> items = UiObject.pathToItems(plugin, "");
-						if (items != null) {
-							for (ItemStack item : items){
-								inv.setItem(inv.firstEmpty(), item);
-							}
-						}
+						builder.basicWindow();
+						builder.putObjects("");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

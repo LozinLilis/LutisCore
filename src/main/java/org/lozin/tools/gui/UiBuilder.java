@@ -7,8 +7,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.tools.enumrator.UiType;
+import org.lozin.tools.string.ArraysHandler;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,4 +41,20 @@ public class UiBuilder {
 		this.plugin = plugin;
 	}
 	public UiBuilder(){}
+	public void putObjects(String folder) throws IOException {
+		List<ItemStack> items = UiObject.pathToItems(plugin, folder);
+		if (items == null || items.isEmpty()) return;
+		for (ItemStack item : items) {
+			inventory.addItem(item);
+		}
+	}
+	public void basicWindow() throws IOException {
+		UiObject o = new UiObject();
+		build(ImmutableMap.of(
+				ArraysHandler.getList("0-8", "45-53"), o.getDECORATION(),
+				Collections.singletonList(46), o.getPRE_PAGE(),
+				Collections.singletonList(52), o.getNEXT_PAGE(),
+				Collections.singletonList(0), o.getPREVIOUS_OBJECT_BUTTON()
+		));
+	}
 }

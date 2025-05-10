@@ -1,6 +1,7 @@
 package org.lozin.tools.file;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,15 +51,18 @@ public class FileService {
 		}
 		return filePaths;
 	}
-	//TODO 修理 NullPointerException
 	public static List<String> getInferiorSurface(JavaPlugin plugin, String path) throws IOException {
 		File dataFolder = plugin.getDataFolder();
+		Path dataFolderPath = dataFolder.toPath();
+		File folder = new File(dataFolder, path);
+		File[] files = folder.listFiles();
 		List<String> filePaths = new ArrayList<>();
-		try (Stream<Path> pathStream = Files.walk(dataFolder.toPath().resolve(path), 1)) {
-			pathStream.map(dataFolder.toPath()::relativize)
-					.map(p -> p.toString().replace("\\", "/"))
-					.forEach(filePaths::add);
+		for (File file : files) {
+			Path relativePath = dataFolderPath.relativize(file.toPath());
+			String filePath = relativePath.toString().replace("\\", "/");
+			filePaths.add(getThisPath(filePath));
 		}
+		System.out.println(filePaths);
 		return filePaths;
 	}
 	public static List<String> getInferiorSurface(JavaPlugin plugin) throws IOException {
@@ -70,8 +73,11 @@ public class FileService {
 					.collect(Collectors.toList());
 		}
 	}
+	@Getter
+	@Setter
 	public static abstract class Entry {
 		protected final File parent;
+		protected String realPath;
 		protected Entry(File parent) {
 			this.parent = parent;
 		}
@@ -84,7 +90,7 @@ public class FileService {
 	}
 	@Getter
 	public static class FolderEntry extends Entry {
-		private final List<Entry> children = Collections.synchronizedList(new ArrayList<>());
+		//private final List<Entry> children = Collections.synchronizedList(new ArrayList<>());
 		public FolderEntry(File parent) {
 			super(parent);
 		}
@@ -106,12 +112,14 @@ public class FileService {
 				if  (Files.isRegularFile(path)) {
 					String relativePath = dataFolder.toPath().relativize(path).toString().replace("\\", "/");
 					FileEntry fileEntry = new FileEntry(getParent(plugin, relativePath));
+					fileEntry.setRealPath(relativePath);
 					String finalPath = getThisPath(relativePath);
 					entries.put(finalPath, fileEntry);
   				}
 				else if (Files.isDirectory(path)) {
 					String relativePath = dataFolder.toPath().relativize(path).toString().replace("\\", "/");
 					FolderEntry folderEntry = new FolderEntry(getParent(plugin, relativePath));
+					folderEntry.setRealPath(relativePath);
 					String finalPath = getThisPath(relativePath);
 					entries.put(finalPath, folderEntry);
 				}

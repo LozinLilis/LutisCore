@@ -32,7 +32,7 @@ public final class MAIN extends JavaPlugin {
 				Cache.init((JavaPlugin) p);
 				FilePathCache.init((JavaPlugin) p);
 			}
-			Bukkit.getLogger().info(FilePathCache.cache.toString());
+			//Bukkit.getLogger().info(FilePathCache.cache.toString());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

@@ -147,6 +147,10 @@ public class ItemFactory {
 		if (notValid()) return null;
 		return getCompound(UiObject.FILE_TYPE_KEY);
 	}
+	public String getPath(){
+		if (notValid()) return null;
+		return getCompound(UiObject.PATH_KEY);
+	}
 	public boolean notValid(){
 		return itemStack == null || itemStack.getType() == Material.AIR;
 	}
