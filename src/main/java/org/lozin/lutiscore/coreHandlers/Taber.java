@@ -9,6 +9,7 @@ import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.file.FileService;
 import org.lozin.tools.string.JavaPluginParser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +20,12 @@ public class Taber implements TabCompleter {
 	public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
 		if (command.getName().equals("lutis_core")){
 			if (strings.length == 1){
-				return DependencyService.getDependencies(MAIN.instance).stream().map(Plugin::getName).collect(Collectors.toList());
+				List<String> listA = Arrays.asList("reload");
+				List<String> listB = DependencyService.getDependencies(MAIN.instance).stream().map(Plugin::getName).collect(Collectors.toList());
+				return new ArrayList<String>(){{
+					addAll(listA);
+					addAll(listB);
+				}};
 			}
 			else if (strings.length == 2){
 				return Arrays.asList("write", "get", "cache", "edit");

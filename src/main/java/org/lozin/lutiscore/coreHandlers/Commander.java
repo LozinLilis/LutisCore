@@ -42,7 +42,7 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 				if (args.length == 2){
 					if (builder == null) builder = new UiBuilder(
 							player,
-							Bukkit.createInventory(null, 54, "§0界面"),
+							Bukkit.createInventory(null, 54, "§0§l"+args[0]),
 							UiType.READ_ONLY,
 							plugin
 					);

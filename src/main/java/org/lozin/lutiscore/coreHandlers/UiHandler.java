@@ -17,7 +17,6 @@ public class UiHandler implements Listener {
 		if (!uiEvent.isSafe()) return;
 		Bukkit.getPluginManager().callEvent(uiEvent);
 		uiEvent.typeHandleClick();
-		uiEvent.traverseFolder();
 		if (uiEvent.isCancelled()) event.setCancelled(true);
 	}
 	@EventHandler

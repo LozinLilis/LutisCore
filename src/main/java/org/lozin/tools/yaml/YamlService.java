@@ -37,6 +37,7 @@ public class YamlService {
 	}
 	
 	public Object get(String param) {
+		if (yamlFactory.getYaml() == null) return null;
 		String[] params = param.split("\\.");
 		Object current = mapper;
 		

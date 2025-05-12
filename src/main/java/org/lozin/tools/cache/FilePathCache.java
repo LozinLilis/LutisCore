@@ -15,4 +15,7 @@ public class FilePathCache {
 			cache.put(plugin.getName(), FileService.mappedFiles(plugin));
 		}
 	}
+	public static void trash() {
+		cache.clear();
+	}
 }

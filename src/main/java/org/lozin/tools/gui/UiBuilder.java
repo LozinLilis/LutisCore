@@ -2,6 +2,7 @@ package org.lozin.tools.gui;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.Data;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -43,7 +44,10 @@ public class UiBuilder {
 	public UiBuilder(){}
 	public void putObjects(String folder) throws IOException {
 		List<ItemStack> items = UiObject.pathToItems(plugin, folder);
-		if (items == null || items.isEmpty()) return;
+		if (items == null || items.isEmpty()) {
+			Bukkit.getLogger().warning("未找到物品 位于: " + folder);
+			return;
+		}
 		for (ItemStack item : items) {
 			inventory.addItem(item);
 		}
@@ -54,7 +58,14 @@ public class UiBuilder {
 				ArraysHandler.getList("0-8", "45-53"), o.getDECORATION(),
 				Collections.singletonList(46), o.getPRE_PAGE(),
 				Collections.singletonList(52), o.getNEXT_PAGE(),
-				Collections.singletonList(0), o.getPREVIOUS_OBJECT_BUTTON()
+				Collections.singletonList(0), o.getPREVIOUS_OBJECT_BUTTON(),
+				Collections.singletonList(48), o.getCREATE_FOLDER_BUTTON(),
+				Collections.singletonList(50), o.getCREATE_FILE_BUTTON()
 		));
+	}
+	public void fleshPreviousObjectButton(String path) {
+		ItemStack item = UiObject.fleshPreviousObjectButton(path);
+		if (item == null) return;
+		inventory.setItem(0, item);
 	}
 }

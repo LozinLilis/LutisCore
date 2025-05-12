@@ -19,6 +19,7 @@ import org.lozin.tools.gui.UiObject;
 import org.lozin.tools.item.ItemFactory;
 import org.lozin.tools.string.MessageSender;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -88,7 +89,7 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 	public void setCancelled(boolean b) {
 		cancelled = b;
 	}
-	public void typeHandleClick(){
+	public void typeHandleClick() throws IOException {
 		switch (uiType) {
 			case DEFAULT:
 				if (cancelSlots.contains(clickedSlot)) setCancelled(true);
@@ -101,6 +102,8 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 			case EDITABLE:
 				break;
 		}
+		traverseFolder();
+		back();
 	}
 	public void typeHandleClose(){
 		switch (uiType) {
@@ -123,11 +126,33 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 		if (itemFactory.notValid()) return;
 		if (itemFactory.getAction() == null) return;
 		if (itemFactory.getAction().equals(UiObject.Actions.OPEN_FOLDER.toString())){
-			Inventory inv = Bukkit.createInventory(null, 54, "§0§l"+itemFactory.getPath());
+			Inventory inv = Bukkit.createInventory(null, 54, "§0§l"+FileService.getThisPath(itemFactory.getPath()));
 			builder = new UiBuilder(player, inv, UiType.READ_ONLY, builder.getPlugin());
 			builder.basicWindow();
 			builder.putObjects(itemFactory.getPath());
-			FilePathCache.cache.forEach((path, map) -> {
+			builder.fleshPreviousObjectButton(itemFactory.getPath());
+		}
+	}
+	public void back() throws IOException {
+		if (clickedItem == null || clickedItem.equals(new ItemStack(Material.AIR))) return;
+		ItemFactory itemFactory = new ItemFactory();
+		itemFactory.parserFactory(clickedItem);
+		if (itemFactory.notValid()) return;
+		if (itemFactory.getAction() == null) return;
+		if (itemFactory.getAction().equals(UiObject.Actions.PREVIOUS_OBJECT.toString())){
+			String path = itemFactory.getPath();
+			if (path == null || path.equals("") || path.equals(FileService.getRootFolder(builder.getPlugin()))) return;
+			File f = FileService.getParent(builder.getPlugin(), path);
+			if (f == null) return;
+			String relativePath = FileService.filterRootPath(builder.getPlugin(), f.getPath());
+			builder = new UiBuilder(player, Bukkit.createInventory(null, 54, "§0§l"+FileService.getThisPath(f.getPath())), UiType.READ_ONLY, builder.getPlugin());
+			builder.basicWindow();
+			builder.putObjects(relativePath);
+			builder.fleshPreviousObjectButton(relativePath);
+		}
+	}
+	public void checkFileCache(){
+		FilePathCache.cache.forEach((path, map) -> {
 				Bukkit.broadcastMessage("§e"+path + ": ");
 				map.forEach((key, value) -> {
 					Bukkit.broadcastMessage(" · "+key + ": ");
@@ -138,6 +163,5 @@ public class LutisCoreUIEvent extends Event implements Cancellable {
 					}
 				});
 			});
-		}
 	}
 }

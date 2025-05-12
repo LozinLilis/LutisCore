@@ -5,6 +5,8 @@ import de.tr7zw.nbtapi.NBTCompound;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.Data;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.lozin.tools.gui.UiObject;
@@ -153,5 +155,28 @@ public class ItemFactory {
 	}
 	public boolean notValid(){
 		return itemStack == null || itemStack.getType() == Material.AIR;
+	}
+	public ItemFactory setEnchant(Enchantment enchantment, int level, Boolean unsafe, Boolean hide){
+		if (itemStack == null || itemStack.getType() == Material.AIR) build();
+		if (unsafe == null) unsafe = false;
+		if (hide == null) hide = false;
+		if (enchantment == null) return this;
+		if (unsafe) {
+			itemStack.addUnsafeEnchantment(enchantment, level);
+		}else{
+			itemStack.addEnchantment(enchantment, level);
+		}
+		if (hide) {
+			ItemMeta meta = itemStack.getItemMeta();
+			if (meta != null) {
+				meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+			}
+			itemStack.setItemMeta(meta);
+		}
+		return this;
+	}
+	public ItemFactory shine() {
+		setEnchant(Enchantment.PROTECTION, 1, true, true);
+		return this;
 	}
 }

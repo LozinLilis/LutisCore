@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lozin.tools.cache.Cache;
+import org.lozin.tools.cache.FilePathCache;
 import org.lozin.tools.gui.UiCache;
 
 import java.io.IOException;
@@ -26,8 +27,10 @@ public class DependencyService {
 	public static void reload(CommandSender sender, Plugin plugin) throws IOException {
 		Cache.mapper.clear();
 		UiCache.trash();
+		FilePathCache.trash();
 		for (Plugin p : getDependencies(plugin)) {
 			Cache.init((JavaPlugin) p);
+			FilePathCache.init((JavaPlugin) p);
 			p.saveConfig();
 			p.reloadConfig();
 			if (sender != null){

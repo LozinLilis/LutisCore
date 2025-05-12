@@ -2,6 +2,7 @@ package org.lozin.tools.file;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -28,14 +29,17 @@ public class FileService {
 		}
 		return filePaths;
 	}
-	public static void createFile(JavaPlugin plugin, String path){
-		File file = new File(plugin.getDataFolder(), path);
-		if(!file.exists()){
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				plugin.getLogger().warning("无法创建文件：" + e.getMessage());
-			}
+	public static void createFile(JavaPlugin plugin, String folder, String name) throws IOException {
+		File file = new File(plugin.getDataFolder(), folder + "/" + name);
+		if (!file.exists()) {
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		}
+	}
+	public static void createFolder(JavaPlugin plugin, String folder, String name){
+		File f = new File(plugin.getDataFolder(), folder + "/" + name);
+		if (!f.exists()) {
+			f.mkdirs();
 		}
 	}
 	public static List<String> getInferiorFiles(JavaPlugin plugin, String path) throws IOException {
@@ -56,11 +60,15 @@ public class FileService {
 		Path dataFolderPath = dataFolder.toPath();
 		File folder = new File(dataFolder, path);
 		File[] files = folder.listFiles();
+		if (files == null) {
+			Bukkit.getLogger().warning("无法获取插件文件列表：" + path);
+			return null;
+		}
 		List<String> filePaths = new ArrayList<>();
 		for (File file : files) {
 			Path relativePath = dataFolderPath.relativize(file.toPath());
 			String filePath = relativePath.toString().replace("\\", "/");
-			filePaths.add(getThisPath(filePath));
+			filePaths.add(filePath);
 		}
 		System.out.println(filePaths);
 		return filePaths;
@@ -100,7 +108,14 @@ public class FileService {
 		return new File(dataFolder, path).getParentFile();
 	}
 	public static String getThisPath(String relativePath){
+		relativePath = relativePath.replace("\\", "/");
 		return relativePath.substring(relativePath.lastIndexOf("/") + 1);
+	}
+	public static String optimizePath(String path){
+		return path.replace("\\", "/");
+	}
+	public static String filterRootPath(JavaPlugin plugin, String origin){
+		return optimizePath(origin).replace(getRootFolder(plugin), "");
 	}
 	public static Map<String, Object> mappedFiles(JavaPlugin plugin) throws IOException {
 		File dataFolder = plugin.getDataFolder();
@@ -126,5 +141,8 @@ public class FileService {
 			});
 		}
 		return entries;
+	}
+	public static String getRootFolder(JavaPlugin plugin){
+		return plugin.getDataFolder().getPath().replace("\\", "/");
 	}
 }
