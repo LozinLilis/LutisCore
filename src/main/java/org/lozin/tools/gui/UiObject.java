@@ -98,4 +98,28 @@ public class UiObject {
 		itemFactory.setCompound(PATH_KEY, path);
 		return itemFactory.build();
 	}
+	public static ItemStack formCreateFolderButton(String path){
+		UiObject uiObject = new UiObject();
+		ItemFactory itemFactory = new ItemFactory();
+		itemFactory.parserFactory(uiObject.CREATE_FOLDER_BUTTON);
+		if (itemFactory.notValid()) return null;
+		itemFactory.setCompound(PATH_KEY, path);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshPreviousPageButton(String path){
+		UiObject uiObject = new UiObject();
+		ItemFactory itemFactory = new ItemFactory();
+		itemFactory.parserFactory(uiObject.PRE_PAGE);
+		if (itemFactory.notValid()) return null;
+		itemFactory.setCompound(PATH_KEY, path);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshNextPageButton(String path){
+		UiObject uiObject = new UiObject();
+		ItemFactory itemFactory = new ItemFactory();
+		itemFactory.parserFactory(uiObject.NEXT_PAGE);
+		if (itemFactory.notValid()) return null;
+		itemFactory.setCompound(PATH_KEY, path);
+		return itemFactory.build();
+	}
 }

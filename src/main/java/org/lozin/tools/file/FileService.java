@@ -10,12 +10,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileService {
+	public static final List<String> invalidFileArgs = Arrays.asList("\"", ":", "*", "?", "\\", "/", "<", ">", "|");
 	public static List<String> getInferiorFiles(JavaPlugin plugin){
 		File dataFolder = plugin.getDataFolder();
 		List<String> filePaths = new ArrayList<>();
@@ -36,11 +38,17 @@ public class FileService {
 			file.createNewFile();
 		}
 	}
-	public static void createFolder(JavaPlugin plugin, String folder, String name){
+	public static boolean createFolder(JavaPlugin plugin, String folder, String name){
+		for (String invalidFileArg : invalidFileArgs) {
+			if (name.contains(invalidFileArg)) {
+				return false;
+			}
+		}
 		File f = new File(plugin.getDataFolder(), folder + "/" + name);
 		if (!f.exists()) {
 			f.mkdirs();
 		}
+		return f.exists();
 	}
 	public static List<String> getInferiorFiles(JavaPlugin plugin, String path) throws IOException {
 		File dataFolder = plugin.getDataFolder();
@@ -70,7 +78,6 @@ public class FileService {
 			String filePath = relativePath.toString().replace("\\", "/");
 			filePaths.add(filePath);
 		}
-		System.out.println(filePaths);
 		return filePaths;
 	}
 	public static List<String> getInferiorSurface(JavaPlugin plugin) throws IOException {

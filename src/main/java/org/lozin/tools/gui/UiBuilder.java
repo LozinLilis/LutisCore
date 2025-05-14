@@ -11,10 +11,8 @@ import org.lozin.tools.enumrator.UiType;
 import org.lozin.tools.string.ArraysHandler;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 public class UiBuilder {
@@ -23,6 +21,10 @@ public class UiBuilder {
 	private UiType uiType = UiType.DEFAULT;
 	private JavaPlugin plugin;
 	private Set<Integer> registeredSlots;
+	private Map<Player, Integer> pager = new HashMap<>();
+	private String folder;
+	private Map<Integer, List<ItemStack>> mapper = new WeakHashMap<>();
+	private Integer maxPage = 1;
 	public void build() throws IOException {
 		build(null);
 	}
@@ -40,15 +42,33 @@ public class UiBuilder {
 		this.uiType = uiType;
 		this.inventory = inventory;
 		this.plugin = plugin;
+		pager.put(player, 1);
 	}
 	public UiBuilder(){}
-	public void putObjects(String folder) throws IOException {
+	public boolean handlerPageCalc(String folder) throws IOException {
 		List<ItemStack> items = UiObject.pathToItems(plugin, folder);
 		if (items == null || items.isEmpty()) {
 			Bukkit.getLogger().warning("未找到物品 位于: " + folder);
-			return;
+			return false;
 		}
-		for (ItemStack item : items) {
+		AtomicInteger page = new AtomicInteger(0);
+		AtomicInteger index = new AtomicInteger(0);
+		int restSize = inventory.getSize() - registeredSlots.size();
+		if (restSize > 0) {
+			List<ItemStack> subList;
+			while (index.get() < items.size() - 1) {
+				page.incrementAndGet();
+				subList = items.subList(index.get(), Math.min(index.get() + restSize, items.size()));
+				mapper.put(page.get(), subList);
+				index.addAndGet(restSize);
+			}
+		}
+		maxPage = page.get();
+		return true;
+	}
+	public void putObjects(String folder) throws IOException {
+		if (!handlerPageCalc(folder)) return;
+		for (ItemStack item : mapper.get(pager.get(player))) {
 			inventory.addItem(item);
 		}
 	}
@@ -63,9 +83,42 @@ public class UiBuilder {
 				Collections.singletonList(50), o.getCREATE_FILE_BUTTON()
 		));
 	}
-	public void fleshPreviousObjectButton(String path) {
+	public void fleshPreviousObjectButton(String path, int slot) {
 		ItemStack item = UiObject.fleshPreviousObjectButton(path);
 		if (item == null) return;
-		inventory.setItem(0, item);
+		inventory.setItem(slot, item);
+	}
+	public void fleshCreateFolderButton(String path, int slot) {
+		ItemStack item = UiObject.formCreateFolderButton(path);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshPreviousPageButton(String path, int slot) {
+		ItemStack item = UiObject.fleshPreviousPageButton(path);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshNextPageButton(String path, int slot) {
+		ItemStack item = UiObject.fleshNextPageButton(path);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshPreviousObjectButton(String path){
+		fleshPreviousObjectButton(path, 0);
+	}
+	public void fleshCreateFolderButton(String path){
+		fleshCreateFolderButton(path, 48);
+	}
+	public void fleshNextPageButton(String path){
+		fleshNextPageButton(path, 52);
+	}
+	public void fleshPreviousPageButton(String path){
+		fleshPreviousPageButton(path, 46);
+	}
+	public void fleshAll(String path){
+		fleshPreviousObjectButton(path);
+		fleshCreateFolderButton(path);
+		fleshNextPageButton(path);
+		fleshPreviousPageButton(path);
 	}
 }

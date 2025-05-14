@@ -26,6 +26,5 @@ public class UiHandler implements Listener {
 		if (!uiEvent.isSafe()) return;
 		Bukkit.getPluginManager().callEvent(uiEvent);
 		uiEvent.typeHandleClose();
-		UiCache.unregister(event.getPlayer());
 	}
 }

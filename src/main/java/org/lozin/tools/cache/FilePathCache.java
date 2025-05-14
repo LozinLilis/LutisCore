@@ -1,6 +1,9 @@
 package org.lozin.tools.cache;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lozin.lutiscore.MAIN;
+import org.lozin.tools.dependencies.DependencyService;
 import org.lozin.tools.file.FileService;
 
 import java.io.IOException;
@@ -17,5 +20,27 @@ public class FilePathCache {
 	}
 	public static void trash() {
 		cache.clear();
+	}
+	public static boolean reload(){
+		trash();
+		try {
+			for (Plugin plugin : DependencyService.getDependencies(MAIN.instance)) {
+				init((JavaPlugin) plugin);
+			}
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	public static boolean reload(Plugin plugin){
+		cache.remove(plugin.getName());
+		try {
+			init((JavaPlugin) plugin);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 }
