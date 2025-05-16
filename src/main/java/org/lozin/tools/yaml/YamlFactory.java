@@ -37,6 +37,7 @@ public class YamlFactory {
 			e.printStackTrace();
 		}
 	}
+	
 	public void flush(Map<String, Object> data) throws IOException {
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);

@@ -10,13 +10,12 @@ import org.lozin.tools.yaml.YamlService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 public class Cache {
 	public static Map<MapperKey, Object> mapper = new ConcurrentHashMap<>();
-	public static Set<YamlService> services = ConcurrentHashMap.newKeySet();
+	public static Map<Map<JavaPlugin, String>, YamlService> yamlService = new ConcurrentHashMap<>();
 	public static void init(JavaPlugin plugin) throws IOException {
 		List<String> files = FileService.getInferiorFiles(plugin);
 		for(String file : files){

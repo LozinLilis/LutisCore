@@ -11,10 +11,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.lozin.tools.gui.UiObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
@@ -26,7 +26,13 @@ public class ItemFactory {
 	private Short durability;
 	private Integer customModelData;
 	private ItemStack itemStack;
-	private Map<String, Object> nbt;
+	private String kether;
+	private HandlerInventoryType handlerInventoryType;
+	private boolean lastChanged = false;
+	public enum HandlerInventoryType {
+		FILE_SYSTEM,
+		INNER_SYSTEM;
+	}
 	public ItemFactory(Material material, String name, List<String> lore, Integer amount, Short durability, Integer customModelData){
 		this.material = material;
 		this.name = name;
@@ -56,15 +62,55 @@ public class ItemFactory {
 		amount = itemStack.getAmount();
 		return this;
 	}
+	public ItemFactory setLore(String... lore){
+		this.lore = Arrays.stream(lore).map(s -> s.replace("&", "§")).collect(Collectors.toList());
+		lastChanged = true;
+		return this;
+	}
+	public ItemFactory setLore(List<String> lore){
+		this.lore = lore.stream().map(s -> s.replace("&", "§")).collect(Collectors.toList());
+		lastChanged = true;
+		return this;
+	}
+	public ItemFactory setName(String name){
+		this.name = name.replace("&", "§");
+		lastChanged = true;
+		return this;
+	}
+	public ItemFactory setType(Material material){
+		this.material = material;
+		lastChanged = true;
+		return this;
+	}
+	public ItemFactory setKether(String kether){
+		this.kether = kether;
+		setCompound(UiObject.INNER_KETHER, kether);
+		return this;
+	}
+	public String getKether(){
+		if (kether == null) return getCompound(UiObject.INNER_KETHER);
+		return kether;
+	}
+	public String getHandlerInvType(){
+		if (handlerInventoryType == null) return getCompound(UiObject.HANDLER_INV_TYPE);
+		return handlerInventoryType.name();
+	}
+	public ItemFactory setHandlerInvType(HandlerInventoryType handlerInventoryType){
+		this.handlerInventoryType = handlerInventoryType;
+		setCompound(UiObject.HANDLER_INV_TYPE, handlerInventoryType.name());
+		return this;
+	}
 	public ItemStack build(){
-		if (itemStack != null) return itemStack;
+		if (itemStack != null && !lastChanged) return itemStack;
 		if(material == null) material = Material.STONE;
 		if(name == null) name = "None Name itemStack";
 		if(lore == null) lore = Collections.emptyList();
 		if(amount == null) amount = 1;
 		if(durability == null) durability = 0;
 		if(customModelData == null) customModelData = 0;
-		itemStack = new ItemStack(material, amount);
+		if (itemStack == null) itemStack = new ItemStack(material, amount);
+		itemStack.setType(material);
+		itemStack.setAmount(amount);
 		itemStack.setDurability(durability);
 		ItemMeta meta = itemStack.getItemMeta();
 		meta.setDisplayName(name.replace("&", "§"));
@@ -104,8 +150,8 @@ public class ItemFactory {
 			String key = paths.get(i);
 			current = current.getOrCreateCompound(key);
 		}
-		current.setString(paths.get(paths.size() - 1), value.toString());
-		itemStack =  nbt.getItem();
+		current.setString(paths.get(paths.size() - 1), value == null ? null : value.toString());
+		itemStack = nbt.getItem();
 		return this;
 	}
 	public String getCompound(String path) {
@@ -177,6 +223,32 @@ public class ItemFactory {
 	}
 	public ItemFactory shine() {
 		setEnchant(Enchantment.PROTECTION, 1, true, true);
+		return this;
+	}
+	public ItemFactory formattedLore(int maxLengthPerLine){
+		if (lore != null) {
+			List<String> formattedLore = new ArrayList<>();
+			for (String line : lore) {
+				if (line.replaceAll("&",  "").replaceAll("§",  "").length() <= maxLengthPerLine) {
+					formattedLore.add(line);
+				}
+				else {
+					List<String> parts = new ArrayList<>();
+					while (true) {
+						if (line.replaceAll("&",  "").replaceAll("§",  "").length() <= maxLengthPerLine) {
+							parts.add("&e  "+line);
+							break;
+						}
+						else {
+							parts.add("&e  "+line.substring(0, maxLengthPerLine));
+							line = line.substring(maxLengthPerLine);
+						}
+					}
+					formattedLore.addAll(parts);
+ 				}
+			}
+			setLore(formattedLore);
+		}
 		return this;
 	}
 }

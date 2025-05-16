@@ -3,16 +3,22 @@ package org.lozin.tools.gui;
 import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lozin.tools.cache.Cache;
 import org.lozin.tools.enumrator.UiType;
+import org.lozin.tools.item.ItemFactory;
 import org.lozin.tools.string.ArraysHandler;
+import org.lozin.tools.yaml.YamlService;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Data
 public class UiBuilder {
@@ -66,6 +72,16 @@ public class UiBuilder {
 		maxPage = page.get();
 		return true;
 	}
+	public void handlerPageCalc(YamlService service, String kether){
+		if (service == null) return;
+	}
+	public void putObjects(String file, String ke) {
+		List<ItemStack> items = virtualObject(file, ke);
+		if (items == null || items.isEmpty()) return;
+		for (ItemStack item : items) {
+			inventory.addItem(item);
+		}
+	}
 	public void putObjects(String folder) throws IOException {
 		if (!handlerPageCalc(folder)) return;
 		for (ItemStack item : mapper.get(pager.get(player))) {
@@ -83,13 +99,38 @@ public class UiBuilder {
 				Collections.singletonList(50), o.getCREATE_FILE_BUTTON()
 		));
 	}
+	public void fileControllerWindow() throws IOException {
+		UiObject o = new UiObject();
+		ItemStack bar = o.getDECORATION().clone();
+		bar.setType(Material.LIME_STAINED_GLASS_PANE);
+		build(ImmutableMap.of(
+				ArraysHandler.getList("0-8", "45-53","9","18","27","36","17","26","35","44"), o.getDECORATION(),
+				Arrays.asList(11, 20, 29, 38), bar,
+				Collections.singletonList(19), o.getSTATUS_SWITCH_BUTTON(),
+				Collections.singletonList(28), o.getADD_OBJECT_BUTTON(),
+				Collections.singletonList(37), o.getADD_LIST_BUTTON(),
+				Collections.singletonList(49), o.getPRE_PAGE(),
+				Collections.singletonList(51), o.getNEXT_PAGE(),
+				Collections.singletonList(10), o.getPREVIOUS_OBJECT_BUTTON()
+		));
+	}
 	public void fleshPreviousObjectButton(String path, int slot) {
 		ItemStack item = UiObject.fleshPreviousObjectButton(path);
 		if (item == null) return;
 		inventory.setItem(slot, item);
 	}
+	public void fleshPreviousObjectButton(String path, String ke, int slot){
+		ItemStack item = UiObject.fleshPreviousObjectButton(path, ke);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
 	public void fleshCreateFolderButton(String path, int slot) {
 		ItemStack item = UiObject.formCreateFolderButton(path);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshCreateFileButton(String path, int slot) {
+		ItemStack item = UiObject.formCreateFileButton(path);
 		if (item == null) return;
 		inventory.setItem(slot, item);
 	}
@@ -100,6 +141,16 @@ public class UiBuilder {
 	}
 	public void fleshNextPageButton(String path, int slot) {
 		ItemStack item = UiObject.fleshNextPageButton(path);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshPreviousPageButton(String path, String ke, int slot){
+		ItemStack item = UiObject.fleshPreviousPageButton(path, ke);
+		if (item == null) return;
+		inventory.setItem(slot, item);
+	}
+	public void fleshNextPageButton(String path, String ke, int slot){
+		ItemStack item = UiObject.fleshNextPageButton(path, ke);
 		if (item == null) return;
 		inventory.setItem(slot, item);
 	}
@@ -115,10 +166,111 @@ public class UiBuilder {
 	public void fleshPreviousPageButton(String path){
 		fleshPreviousPageButton(path, 46);
 	}
+	public void fleshCreateFileButton(String path){
+		fleshCreateFileButton(path, 50);
+	}
 	public void fleshAll(String path){
 		fleshPreviousObjectButton(path);
 		fleshCreateFolderButton(path);
+		fleshCreateFileButton(path);
 		fleshNextPageButton(path);
 		fleshPreviousPageButton(path);
+	}
+	public List<ItemStack> virtualObject(String file, String ke) {
+		if  (file == null || ke == null) {
+			return null;
+		}
+		Map<JavaPlugin, String> m = ImmutableMap.of(plugin, file);
+		List<ItemStack> items = new ArrayList<>();
+		if (Cache.yamlService.containsKey(m)) {
+			YamlService service = Cache.yamlService.get(m);
+			folder = file;
+			if (ke.isEmpty()) service.getTopLevelMap().forEach((k, v) -> {
+				items.add(createItem(folder, k, v));
+			});
+			else {
+				Object valueObject = service.get(ke);
+				traverseNode(ke, valueObject, items, service);
+			}
+		}
+		System.out.println(items.stream().map(i -> Objects.requireNonNull(i.getItemMeta()).getDisplayName()).collect(Collectors.toSet()));
+		return items;
+	}
+	private void traverseNode(String fullKether, Object rootObject, List<ItemStack> items, YamlService service){
+		if (rootObject instanceof Map) {
+			((Map<?, ?>) rootObject).forEach((k, v) -> {
+				items.add(createItem(folder, fullKether + "." + k, v));
+			});
+		}
+		else if (rootObject instanceof List) {
+			IntStream.range(0, ((List<?>) rootObject).size()).forEach(index -> {
+				Object value = ((List<?>) rootObject).get(index);
+				items.add(createItem(folder, fullKether + "." + index, value));
+			});
+		}
+		else {
+			items.add(createItem(folder, fullKether, rootObject));
+		}
+	}
+	
+	private ItemStack createItem(String path, String fullKey, Object value) {
+		int maxLength = 5;
+		Material material = Material.BOOK;
+		String key = fullKey.substring(fullKey.lastIndexOf(".") + 1);
+		String displayName = "&7[对象] &f" + key + " = &e" + value.toString().substring(0, Math.min(value.toString().length(), maxLength)) + (value.toString().length() > maxLength ? "..." : "");
+		
+		if (value instanceof Map) {
+			material = Material.CHEST;
+			displayName = "&a[对象包] &f" + key;
+		} else if (value instanceof List) {
+			material = Material.BOOKSHELF;
+			displayName = "&e[列表] &f" + key;
+		}
+		
+		ItemFactory factory = new ItemFactory(material, displayName, null, 1, null, null)
+				       .setKether(fullKey)
+				       .setCompound(UiObject.PATH_KEY, path);
+		if (value instanceof Map) {
+			factory.setCompound(UiObject.ACTION_KEY, UiObject.Actions.OPEN_COMPOUND);
+		} else if (value instanceof List) {
+			factory.setCompound(UiObject.ACTION_KEY, UiObject.Actions.OPEN_COMPOUND);
+		} else {
+			factory.setCompound(UiObject.ACTION_KEY, UiObject.Actions.EDIT_OBJECT);
+			factory.setLore("&f>> &e"+ value).formattedLore(40);
+		}
+		return factory.build();
+	}
+	public ItemStack switchStatusOfStatusButton(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) return null;
+		ItemFactory itemFactory = new ItemFactory();
+		itemFactory.parserFactory(item);
+		if (itemFactory.notValid()) return null;
+		if (itemFactory.getAction() == null) return null;
+		ItemStack newItem;
+		if (itemFactory.getAction().equals(UiObject.Actions.Status.EDIT.toString())) {
+			itemFactory.setCompound(UiObject.ACTION_KEY, UiObject.Actions.Status.DELETE);
+			itemFactory.setType(Material.TNT_MINECART);
+			itemFactory.setName("&c&l删除状态");
+			newItem = itemFactory.build();
+		} else if (itemFactory.getAction().equals(UiObject.Actions.Status.DELETE.toString())){
+			itemFactory.setCompound(UiObject.ACTION_KEY, UiObject.Actions.Status.EDIT);
+			itemFactory.setType(Material.MINECART);
+			itemFactory.setName("&a&l编辑状态");
+			newItem = itemFactory.build();
+		}else return null;
+		return newItem;
+	}
+	public void reloadStatusButton(ItemStack item, Integer slot){
+		if (item == null || item.getType() == Material.AIR) return;
+		if (slot == null) slot = 19;
+		ItemStack newItem = switchStatusOfStatusButton(item);
+		if (newItem == null) newItem = item.clone();
+		inventory.setItem(slot, newItem);
+	}
+	public void renderKetherInfo(String kether, Integer slot) {
+		ItemStack item = UiObject.fullKetherItem(kether);
+		if (item == null || item.getType() == Material.AIR) return;
+		if (slot == null) slot = 0;
+		inventory.setItem(slot, item);
 	}
 }

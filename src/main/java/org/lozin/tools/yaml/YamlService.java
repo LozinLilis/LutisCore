@@ -1,5 +1,6 @@
 package org.lozin.tools.yaml;
 
+import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.lozin.tools.cache.Cache;
@@ -7,8 +8,7 @@ import org.lozin.tools.cache.MapperKey;
 import org.lozin.tools.enumrator.MapperType;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -23,8 +23,9 @@ public class YamlService {
 		if (this.mapper == null) {
 			this.mapper = new ConcurrentHashMap<>();
 		}
-		Cache.mapper.put(new MapperKey(yamlFactory.getPlugin(), MapperType.YamlCache, yamlFactory.getPathInFolder()), mapper);
-		Cache.services.add(this);
+		MapperKey key = new MapperKey(yamlFactory.getPlugin(), MapperType.YamlCache, yamlFactory.getPathInFolder());
+		Cache.mapper.put(key, mapper);
+		Cache.yamlService.put(ImmutableMap.of(yamlFactory.getPlugin(), yamlFactory.getPathInFolder()), this);
 	}
 	public void getAll() {
 		if (mapper == null) {
@@ -35,12 +36,21 @@ public class YamlService {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
 	}
+	public List<String> getTopLevelKeys() {
+		return new ArrayList<>(mapper.keySet());
+	}
+	public Map<String, Object> getTopLevelMap() {
+		Map<String, Object> map = new HashMap<>();
+		for (Map.Entry<?, ?> entry : mapper.entrySet()) {
+			map.put(entry.getKey().toString(), entry.getValue());
+		}
+		return map;
+	}
 	
 	public Object get(String param) {
 		if (yamlFactory.getYaml() == null) return null;
 		String[] params = param.split("\\.");
 		Object current = mapper;
-		
 		for (String key : params) {
 			if (current instanceof Map) {
 				Map<String, Object> map = (Map<String, Object>) current;
@@ -64,13 +74,17 @@ public class YamlService {
 	// 获取 Map 类型节点
 	public Map<String, Object> getMap(String param) {
 		Object value = get(param, null);
-		return value instanceof Map ? (Map<String, Object>) value : null;
+		if (value == null) return null;
+		return value instanceof Map ? (Map<String, Object>) value : new HashMap<String, Object>(){{
+			put(value.toString(), null);
+		}};
 	}
 	
 	// 获取 List 类型节点
 	public List<Object> getList(String param) {
 		Object value = get(param, null);
-		return value instanceof List ? (List<Object>) value : null;
+		if (value == null) return null;
+		return value instanceof List ? (List<Object>) value : Collections.singletonList(value);
 	}
 	public void write(String param, Object value) {
 		if (param == null || param.isEmpty()) return;

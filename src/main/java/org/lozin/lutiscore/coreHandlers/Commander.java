@@ -49,6 +49,7 @@ public class Commander implements org.bukkit.command.CommandExecutor {
 					try {
 						builder.basicWindow();
 						builder.putObjects("");
+						builder.fleshAll("");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
