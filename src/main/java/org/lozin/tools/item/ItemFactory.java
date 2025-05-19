@@ -42,6 +42,7 @@ public class ItemFactory {
 		this.customModelData = customModelData;
 	}
 	public ItemFactory(){}
+	public ItemFactory(ItemStack itemStack){parserFactory(itemStack);}
 	public ItemFactory parserFactory(ItemStack itemStack){
 		if (itemStack == null || itemStack.getType() == Material.AIR) return this;
 		this.itemStack = itemStack;
@@ -90,6 +91,17 @@ public class ItemFactory {
 	public String getKether(){
 		if (kether == null) return getCompound(UiObject.INNER_KETHER);
 		return kether;
+	}
+	public String getParentKether(){
+		String ke = getKether();
+		if (ke == null) return null;
+		if (ke.lastIndexOf(".") == -1) return "";
+		return ke.substring(0, ke.lastIndexOf("."));
+	}
+	public static String getParentKether(String ke){
+		if (ke == null) return null;
+		if (ke.lastIndexOf(".") == -1) return "";
+		return ke.substring(0, ke.lastIndexOf("."));
 	}
 	public String getHandlerInvType(){
 		if (handlerInventoryType == null) return getCompound(UiObject.HANDLER_INV_TYPE);
@@ -190,6 +202,10 @@ public class ItemFactory {
 	public String getAction(){
 		if (notValid()) return null;
 		return getCompound(UiObject.ACTION_KEY);
+	}
+	public UiObject.Actions getAction(String name){
+		if (notValid()) return null;
+		return UiObject.Actions.getAction(getCompound(UiObject.ACTION_KEY));
 	}
 	public String getFileType(){
 		if (notValid()) return null;

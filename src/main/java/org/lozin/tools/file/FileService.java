@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,11 +33,13 @@ public class FileService {
 		return filePaths;
 	}
 	public static void createFile(JavaPlugin plugin, String folder, String name) throws IOException {
-		File file = new File(plugin.getDataFolder(), folder + "/" + name);
-		if (!file.exists()) {
-			file.getParentFile().mkdirs();
-			file.createNewFile();
+		for (String invalidFileArg : invalidFileArgs) {
+			if (name.contains(invalidFileArg)) {
+				return;
+			}
 		}
+		Path path = Paths.get(plugin.getDataFolder().getPath() + File.separator + folder + File.separator + name);
+		Files.createFile(path);
 	}
 	public static boolean createFolder(JavaPlugin plugin, String folder, String name){
 		for (String invalidFileArg : invalidFileArgs) {

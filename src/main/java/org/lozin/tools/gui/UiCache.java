@@ -14,14 +14,12 @@ public class UiCache {
 	}
 	public static void unregister(HumanEntity player) {
 		Player p = (Player) player;
-		if (builders.containsKey(p)) {
-//			MessageSender.sendColorizedMessage(p, "&e已注销界面: &7" +
-//                  builders.get(p).getPlugin() + ": " + builders.get(p).getUiType() +
-//				  " | " + builders.get(p).getInventory()
-//			);
-		}builders.remove(p);
+		builders.remove(p);
 	}
 	public static void trash(){
+		for (Player p : builders.keySet()) {
+			p.closeInventory();
+		}
 		builders.clear();
 	}
 }

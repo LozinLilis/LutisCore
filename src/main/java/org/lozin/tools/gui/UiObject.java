@@ -23,48 +23,48 @@ public class UiObject {
 	
 	
 	public enum Actions{
+		NONE,
+		KETHER_INFO,
 		OPEN_FOLDER,
 		OPEN_FILE,
 		CREATE_OBJECT,
 		CREATE_LIST,
+		CREATE_MAP,
 		CREATE_FOLDER,
 		CREATE_FILE,
+		CREATE_DATA,
+		EDIT_DATA,
 		EDIT_OBJECT,
 		EDIT_LIST,
 		PREVIOUS_PAGE,
 		NEXT_PAGE,
 		PREVIOUS_OBJECT,
-		OPEN_COMPOUND;
-		public enum Status{
-			DELETE, EDIT;
-			public Status getStatus(String name) {
-				for (Status s : values()) {
-					if (s.toString().equals(name)) return s;
-				}
-				return null;
-			}
-		}
-		public Actions getAction(String name) {
+		OPEN_COMPOUND,
+		STATUS_EDIT,
+		STATUS_DELETE,
+		;
+		public static Actions getAction(String name) {
 			for (Actions a : values()) {
-				if (a.toString().equals(name)) return a;
+				if (a.toString().equalsIgnoreCase(name)) return a;
 			}
 			return null;
 		}
 	}
-	private final ItemStack DECORATION = new ItemFactory(Material.BLACK_STAINED_GLASS_PANE, " ", null, 1,null, null).build();
-	private final ItemStack ADD_OBJECT_BUTTON = new ItemFactory(Material.CHEST, "&6&l创建对象", Arrays.asList("&7置入 &f<普通对象> &7类型值"), 1,null, null).setCompound(ACTION_KEY, Actions.CREATE_OBJECT).build();
-	private final ItemStack ADD_LIST_BUTTON = new ItemFactory(Material.BOOKSHELF, "&6&l创建列表", Arrays.asList("&7置入 &f<列表> &7类型值"), 1,null, null).setCompound(ACTION_KEY, Actions.CREATE_LIST).build();
+	private final ItemStack DECORATION = new ItemFactory(Material.BLACK_STAINED_GLASS_PANE, " ", null, 1,null, null).setCompound(ACTION_KEY, Actions.NONE).build();
+	private final ItemStack ADD_OBJECT_BUTTON = new ItemFactory(Material.BOOK, "&6&l创建对象", Arrays.asList("&7置入 &f<普通对象> &7类型值"), 1,null, null).setCompound(ACTION_KEY, Actions.CREATE_OBJECT).setKether("").build();
+	private final ItemStack ADD_LIST_BUTTON = new ItemFactory(Material.BOOKSHELF, "&6&l创建列表", Arrays.asList("&7置入 &f<列表> &7类型值"), 1,null, null).setCompound(ACTION_KEY, Actions.CREATE_LIST).setKether("").build();
+	private final ItemStack ADD_MAP_BUTTON = new ItemFactory(Material.CHEST, "&6&l创建对象包", Arrays.asList("&7置入 &f<对象包> &7类型值"), 1,null, null).setCompound(ACTION_KEY, Actions.CREATE_MAP).setKether("").build();
 	private ItemStack PREVIOUS_OBJECT_BUTTON = new ItemFactory(Material.REDSTONE_TORCH, "&6&l返回上一层级", null, 1,null, null).shine().setCompound(ACTION_KEY, Actions.PREVIOUS_OBJECT).build();
 	private final ItemStack CREATE_FOLDER_BUTTON = new ItemFactory(Material.CHEST, "&6&l创建文件夹", Arrays.asList("&7置入 &f<文件夹> &7类型"), 1,null, null).shine().setCompound(ACTION_KEY, Actions.CREATE_FOLDER).build();
 	private final ItemStack CREATE_FILE_BUTTON = new ItemFactory(Material.PAPER, "&6&l创建文件", Arrays.asList("&7置入 &f<文件> &7类型"), 1,null, null).shine().setCompound(ACTION_KEY, Actions.CREATE_FILE).build();
-	private final ItemStack EDITABLE_OBJECT_BUTTON = new ItemFactory(Material.PAPER, "&6&l编辑对象", Arrays.asList("&7编辑此 &f<普通对象>"), 1,null, null).setCompound(ACTION_KEY, Actions.EDIT_OBJECT).build();
-	private final ItemStack EDITABLE_LIST_BUTTON = new ItemFactory(Material.PAPER, "&6&l编辑列表", Arrays.asList("&7编辑此 &f<列表>"), 1,null, null).setCompound(ACTION_KEY, Actions.EDIT_LIST).build();
 	private final ItemStack PRE_PAGE = new ItemFactory(Material.ARROW, "&e&l上一页", null, 1,null, null).setCompound(ACTION_KEY, Actions.PREVIOUS_PAGE).build();
 	private final ItemStack NEXT_PAGE = new ItemFactory(Material.ARROW, "&e&l下一页", null, 1,null, null).setCompound(ACTION_KEY, Actions.NEXT_PAGE).build();
-	private ItemStack STATUS_SWITCH_BUTTON = new ItemFactory(Material.MINECART, "&a&l编辑状态", Arrays.asList("&7[点击切换]"), 1,null, null).setCompound(ACTION_KEY, Actions.Status.EDIT).shine().build();
+	private final ItemStack STATUS_SWITCH_BUTTON = new ItemFactory(Material.MINECART, "&a&l编辑状态", Arrays.asList("&7[点击切换]"), 1,null, null).setCompound(ACTION_KEY, Actions.STATUS_EDIT).shine().build();
+	private ItemStack INFO_BUTTON = new ItemFactory(Material.COMPASS, "", null, 1,null, null).setCompound(ACTION_KEY, Actions.KETHER_INFO).build();
+	private final ItemStack ADD_DATA = new ItemFactory(Material.PAPER, "&6&l添加数据", Arrays.asList("&7置入 &f<数据> &7类型"), 1, null, null).setCompound(ACTION_KEY, Actions.CREATE_DATA).build();
 	
-	public void insertItem(Inventory inventory, Map<List<Integer>, ItemStack> mapper) {
-		if (mapper == null || mapper.isEmpty()) return;
+	public static Set<Integer> insertItem(Inventory inventory, Map<List<Integer>, ItemStack> mapper) {
+		if (mapper == null || mapper.isEmpty()) return new HashSet<>();
 		Set<Integer> s = new HashSet<>();
 		for (List<Integer> slots : mapper.keySet()) {
 			for (Integer slot : slots){
@@ -72,7 +72,7 @@ public class UiObject {
 				s.add(slot);
 			}
 		}
-		registeredSlots = s;
+		return s;
 	}
 	public static List<ItemStack> pathToItems(JavaPlugin plugin, String folder) throws IOException {
 		if (!plugin.isEnabled()) return null;
@@ -84,6 +84,9 @@ public class UiObject {
 		}
 		for (String p : paths) {
 			String path = FileService.getThisPath(p);
+			if (!FilePathCache.cache.containsKey(plugin.getName())) {
+				FilePathCache.init(plugin);
+			}
 			Object entry = FilePathCache.cache.get(plugin.getName()).get(path);
 			if (entry instanceof FileService.FileEntry) {
 				items.add(new ItemFactory(Material.PAPER, "&f[&e&l文件&f] &6&l"+FileService.getThisPath(path), null, 1,null, null)
@@ -176,6 +179,34 @@ public class UiObject {
 		ItemFactory itemFactory = new ItemFactory();
 		itemFactory.parserFactory(item);
 		itemFactory.setCompound(INNER_KETHER, ke);
+		itemFactory.setHandlerInvType(ItemFactory.HandlerInventoryType.INNER_SYSTEM);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshCreateMapButton(String path, String ke){
+		ItemFactory itemFactory = new ItemFactory(new UiObject().getADD_MAP_BUTTON());
+		itemFactory.setCompound(INNER_KETHER, ke);
+		itemFactory.setCompound(PATH_KEY, path);
+		itemFactory.setHandlerInvType(ItemFactory.HandlerInventoryType.INNER_SYSTEM);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshCreateListButton(String path, String ke){
+		ItemFactory itemFactory = new ItemFactory(new UiObject().getADD_LIST_BUTTON());
+		itemFactory.setCompound(INNER_KETHER, ke);
+		itemFactory.setCompound(PATH_KEY, path);
+		itemFactory.setHandlerInvType(ItemFactory.HandlerInventoryType.INNER_SYSTEM);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshCreateObjectButton(String path, String ke){
+		ItemFactory itemFactory = new ItemFactory(new UiObject().getADD_OBJECT_BUTTON());
+		itemFactory.setCompound(INNER_KETHER, ke);
+		itemFactory.setCompound(PATH_KEY, path);
+		itemFactory.setHandlerInvType(ItemFactory.HandlerInventoryType.INNER_SYSTEM);
+		return itemFactory.build();
+	}
+	public static ItemStack fleshAddDataButton(String path, String ke){
+		ItemFactory itemFactory = new ItemFactory(new UiObject().getADD_DATA());
+		itemFactory.setCompound(INNER_KETHER, ke);
+		itemFactory.setCompound(PATH_KEY, path);
 		itemFactory.setHandlerInvType(ItemFactory.HandlerInventoryType.INNER_SYSTEM);
 		return itemFactory.build();
 	}

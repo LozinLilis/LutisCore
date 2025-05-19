@@ -25,6 +25,6 @@ public class UiHandler implements Listener {
 		LutisCoreUIEvent uiEvent = new LutisCoreUIEvent(UiCache.getBuilder(event.getPlayer()));
 		if (!uiEvent.isSafe()) return;
 		Bukkit.getPluginManager().callEvent(uiEvent);
-		uiEvent.typeHandleClose();
+		uiEvent.typeHandleCloseOri();
 	}
 }

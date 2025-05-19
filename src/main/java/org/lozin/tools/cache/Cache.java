@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 public class Cache {
-	public static Map<MapperKey, Object> mapper = new ConcurrentHashMap<>();
+	public static final Map<MapperKey, Object> mapper = new ConcurrentHashMap<>();
 	public static Map<Map<JavaPlugin, String>, YamlService> yamlService = new ConcurrentHashMap<>();
 	public static void init(JavaPlugin plugin) throws IOException {
 		List<String> files = FileService.getInferiorFiles(plugin);
@@ -25,5 +25,6 @@ public class Cache {
 				if (MAIN.instance.getConfig().getBoolean("debug.cache")) System.out.println(mapper);
 			}
 		}
+		//ConsoleFix.log(plugin, mapper.entrySet().toString());
 	}
 }
